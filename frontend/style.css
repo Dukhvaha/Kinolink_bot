@@ -1,0 +1,61 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #0b0b0b;
+    color: white;
+}
+
+.container {
+    max-width: 1000px;
+    margin: auto;
+    padding: 20px;
+}
+
+.movie-card {
+    display: flex;
+    gap: 25px;
+    margin-bottom: 30px;
+}
+
+.poster {
+    width: 220px;
+    border-radius: 12px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+}
+
+.info {
+    flex: 1;
+}
+
+h1 {
+    margin: 0 0 10px 0;
+}
+
+.meta {
+    color: #aaa;
+    margin-bottom: 10px;
+}
+
+.genres {
+    margin-bottom: 15px;
+}
+
+.genre {
+    display: inline-block;
+    background: #1f1f1f;
+    padding: 6px 10px;
+    border-radius: 6px;
+    margin-right: 6px;
+    font-size: 14px;
+}
+
+#description {
+    line-height: 1.5;
+    color: #ddd;
+}
+
+.player {
+    margin-top: 20px;
+    border-radius: 10px;
+    overflow: hidden;
+}
