@@ -2,30 +2,99 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Фильм</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KINILINK</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;400;700;900&family=Mulish:ital,wght@0,300;0,400;0,600;1,300&display=swap" rel="stylesheet">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<div class="container">
-    <div class="movie-card">
+<div class="hero-backdrop" id="backdrop"></div>
+<div class="grain"></div>
 
-        <img id="poster" class="poster">
+<div class="page">
+    <header>
+        <div class="logo">KINO<span>LINK</span></div>
+    </header>
 
-        <div class="info">
-            <h1 id="title">Загрузка...</h1>
-
-            <div class="meta" id="meta"></div>
-
-            <div id="genres" class="genres"></div>
-
-            <p id="description"></p>
-        </div>
-
+    <!-- ERROR -->
+    <div class="error-screen" id="errorScreen">
+        <div class="error-code">404</div>
+        <div class="error-msg">Фильм не найден или произошла ошибка загрузки</div>
     </div>
 
-    <div class="player">
-        <div id="kinobd"></div>
+    <!-- LOADING SKELETON -->
+    <div class="loading-state active" id="loadingState">
+        <div class="movie-hero" style="opacity:1;animation:none;">
+            <div class="poster-skeleton skeleton"></div>
+            <div class="skeleton-info">
+                <div class="skeleton" style="height:14px;width:120px;"></div>
+                <div class="skeleton" style="height:48px;width:80%;"></div>
+                <div class="skeleton" style="height:44px;width:160px;border-radius:100px;"></div>
+                <div style="display:flex;gap:8px;">
+                    <div class="skeleton" style="height:34px;width:90px;border-radius:8px;"></div>
+                    <div class="skeleton" style="height:34px;width:110px;border-radius:8px;"></div>
+                    <div class="skeleton" style="height:34px;width:80px;border-radius:8px;"></div>
+                </div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                    <div class="skeleton" style="height:26px;width:70px;border-radius:6px;"></div>
+                    <div class="skeleton" style="height:26px;width:60px;border-radius:6px;"></div>
+                    <div class="skeleton" style="height:26px;width:80px;border-radius:6px;"></div>
+                </div>
+                <div class="skeleton" style="height:100px;border-radius:12px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="loaded-state" id="loadedState">
+        <div class="movie-hero">
+            <div class="poster-wrap">
+                <div class="poster-glow"></div>
+                <img id="poster" class="poster" referrerpolicy="no-referrer" alt="Постер">
+            </div>
+
+            <div class="info">
+                <div class="title-block">
+                    <div class="original-title" id="originalTitle"></div>
+                    <h1 id="title">—</h1>
+                </div>
+
+                <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
+                    <div class="rating-badge" id="ratingBadge">
+                        <span class="rating-star">★</span>
+                        <span class="rating-num" id="ratingNum">—</span>
+                        <span class="rating-label">Кинопоиск</span>
+                    </div>
+                    <div class="rating-badge rating-badge--imdb" id="ratingImdb">
+                        <span class="rating-star" style="color:#f5c518;">★</span>
+                        <span class="rating-num" id="ratingImdbNum" style="color:#f5c518;">—</span>
+                        <span class="rating-label">IMDb</span>
+                    </div>
+                </div>
+
+                <div class="meta-row" id="metaRow"></div>
+
+                <div class="tags" id="genres"></div>
+
+                <div class="tags" id="countries"></div>
+
+                <div class="desc-block">
+                    <p class="desc-text" id="description">Описание отсутствует.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-divider">
+            <h2>Смотреть онлайн</h2>
+            <div class="divider-line"></div>
+        </div>
+
+        <div class="player-wrap">
+            <div id="kinobd"></div>
+        </div>
     </div>
 </div>
 

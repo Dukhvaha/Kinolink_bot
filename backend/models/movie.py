@@ -15,7 +15,8 @@ class MovieFull(BaseModel):
     original_name: Optional[str]
     year: Optional[int]
     poster: Optional[str]
-    rating: float
+    rating: Optional[float]
+    rating_imdb: Optional[float]
     description: Optional[str]
     genres: List[str]
     countries: List[str]
