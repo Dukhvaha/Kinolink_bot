@@ -1,7 +1,10 @@
+import httpx
 from fastapi import APIRouter
+from fastapi.responses import Response
 from backend.services.kinopoisk_id import search_movies
 from backend.services.kinopoisk_card import get_movie_by_id
 from backend.models.movie import MovieFull, MovieShort
+from config import KINOPOISK_API_KEY
 
 router = APIRouter()
 
@@ -40,3 +43,10 @@ async def get_movie(movie_id: int):
         countries=[c["country"] for c in film.get("countries", [])],
         film_length=film.get("filmLength"),
     )
+
+@router.get('/proxy/poster')
+async def proxy_poster(url:str):
+    headers = {'X-API-KEY':KINOPOISK_API_KEY}
+    async with httpx.AsyncClient() as client:
+        response = await client.get(url,headers=headers)
+    return Response(content=response.content, media_type='image/jpeg')
