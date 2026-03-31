@@ -1,0 +1,6 @@
+BOT_API_TOKEN = "your_bot_token"
+CHANNEL_BOT_ID = "your_channel_id"
+KINOPOISK_API_KEY = "your_api_key"
+KINOPOISK_URL = "https://kinopoiskapiunofficial.tech/api/v2.1/films/search-by-keyword"
+BASE_URL = "https://your-domain.com"
+BACKEND_URL = "http://localhost:8000"
