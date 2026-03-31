@@ -8,8 +8,11 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
+    allow_origins=[
+        "http://localhost:8000",
+        "https://catalytical-cuticolor-della.ngrok-free.dev",
+    ],
+    allow_methods=["GET"],
     allow_headers=["*"],
 )
 
