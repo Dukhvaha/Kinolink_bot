@@ -80,21 +80,29 @@ async def handle_noop(callback: CallbackQuery):
 async def handle_movie_select(callback: CallbackQuery):
     movie_id = int(callback.data.split("_")[1])
 
-    async with httpx.AsyncClient() as client:
-        response = await client.get(f"{BACKEND_URL}/movies/{movie_id}")
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            response = await client.get(f"{BACKEND_URL}/movies/{movie_id}")
+    except httpx.TimeoutException:
+        await callback.answer("⏱ Сервер не отвечает, попробуй позже.", show_alert=True)
+        return
+    except Exception:
+        await callback.answer("❌ Что-то пошло не так.", show_alert=True)
+        return
 
     if response.status_code != 200:
         await callback.answer("Ошибка загрузки фильма", show_alert=True)
         return
 
     movie = response.json()
-
     name = movie.get("name", "Без названия")
     year = movie.get("year", "")
+    rating = movie.get("rating", 0)
     poster = movie.get("poster")
 
     caption = (
         f"🎬 *{name}* ({year})\n"
+        f"⭐️ {rating}"
     )
 
     await callback.message.answer_photo(
