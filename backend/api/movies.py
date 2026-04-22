@@ -1,6 +1,9 @@
+import random
+
 import httpx
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from fastapi.responses import Response
+
 from backend.services.kinopoisk_id import search_movies
 from backend.services.kinopoisk_card import get_movie_by_id
 from backend.models.movie import MovieFull, MovieShort
@@ -50,3 +53,44 @@ async def proxy_poster(url:str):
     async with httpx.AsyncClient() as client:
         response = await client.get(url,headers=headers)
     return Response(content=response.content, media_type='image/jpeg')
+
+
+@router.get('/novelties', response_model=list[MovieShort])
+async def get_novelties():
+    headers = {"X-API-KEY": KINOPOISK_API_KEY}
+    url = "https://kinopoiskapiunofficial.tech/api/v2.2/films/top"
+    async with httpx.AsyncClient(timeout=10.0) as client:
+        response = await client.get(url, headers=headers, params={"type": "TOP_100_POPULAR_FILMS", "page": 1})
+
+    if response.status_code != 200:
+        raise HTTPException(status_code=500, detail="Ошибка получения новинок")
+
+    films = response.json().get("films", [])
+    result = []
+    for film in films:
+        result.append(MovieShort(
+            id=film.get("filmId"),
+            name=film.get("nameRu") or film.get("nameEn") or "No title",
+            year=film.get("year"),
+            poster=film.get("posterUrlPreview"),
+        ))
+    return result
+
+@router.get('/random', response_model=MovieShort)
+async def get_random():
+    headers = {"X-API-KEY": KINOPOISK_API_KEY}
+    url = "https://kinopoiskapiunofficial.tech/api/v2.2/films/top"
+    async with httpx.AsyncClient(timeout=10.0) as client:
+        response = await client.get(url, headers=headers, params={"type": "TOP_100_POPULAR_FILMS", "page": 1})
+
+    if response.status_code != 200:
+        raise HTTPException(status_code=500, detail="Ошибка")
+
+    films = response.json().get("films", [])
+    film = random.choice(films)
+    return MovieShort(
+        id=film.get("filmId"),
+        name=film.get("nameRu") or film.get("nameEn") or "No title",
+        year=film.get("year"),
+        poster=film.get("posterUrlPreview"),
+    )

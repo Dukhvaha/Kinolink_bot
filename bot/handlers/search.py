@@ -3,7 +3,9 @@ from aiogram import Router, F, Bot
 from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
 
+from config import BASE_URL
 from bot.keyboards.inline import films_keyboard, watch_keyboard
 from bot.handlers.start import is_subscribed
 from config import CHANNEL_BOT_ID, BACKEND_URL
@@ -112,3 +114,107 @@ async def handle_movie_select(callback: CallbackQuery):
         reply_markup=watch_keyboard(movie_id)
     )
     await callback.answer()
+
+@router.message(F.text == "🔥 Популярное")
+async def handle_novelties(message: Message, state: FSMContext, bot: Bot):
+    if not await is_subscribed(bot, message.from_user.id):
+        await message.answer("❌ Для использования бота подпишитесь на канал!")
+        return
+
+    msg = await message.answer("⏳ Загружаю новинки...")
+
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            response = await client.get(f"{BACKEND_URL}/novelties")
+        films = response.json() if response.status_code == 200 else []
+    except Exception:
+        await msg.delete()
+        await message.answer("❌ Ошибка загрузки новинок.")
+        return
+
+    await msg.delete()
+
+    if not films:
+        await message.answer("😔 Новинки не найдены.")
+        return
+
+    # Берём только 6 фильмов
+    films = films[:6]
+    await state.set_data({"films": films})
+
+    await message.answer(
+        "🔥 *Новинки — выбери фильм:*",
+        parse_mode="Markdown",
+        reply_markup=films_keyboard(films, page=0)
+    )
+
+@router.message(F.text == "🎲 Случайный фильм")
+async def handle_random(message: Message, bot: Bot):
+    if not await is_subscribed(bot, message.from_user.id):
+        await message.answer("❌ Для использования бота подпишитесь на канал!")
+        return
+    await show_random_film(message, bot)
+
+
+@router.callback_query(F.data == "random_next")
+async def handle_random_next(callback: CallbackQuery, bot: Bot):
+    await callback.message.delete()
+    await show_random_film(callback.message, bot)
+    await callback.answer()
+
+
+async def show_random_film(message: Message, bot: Bot):
+    msg = await message.answer("🎲 Ищу случайный фильм...")
+
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            response = await client.get(f"{BACKEND_URL}/random")
+        film = response.json() if response.status_code == 200 else None
+    except Exception:
+        await msg.delete()
+        await message.answer("❌ Ошибка.")
+        return
+
+    await msg.delete()
+
+    if not film:
+        await message.answer("😔 Не удалось найти фильм.")
+        return
+
+    movie_id = film.get("id")
+
+    # Получаем полные данные фильма
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            full = await client.get(f"{BACKEND_URL}/movies/{movie_id}")
+        movie = full.json() if full.status_code == 200 else {}
+    except Exception:
+        movie = {}
+
+    name = movie.get("name") or film.get("name", "Без названия")
+    year = movie.get("year") or film.get("year", "")
+    rating = movie.get("rating", 0)
+    description = movie.get("description", "Описание отсутствует.")
+    poster = movie.get("poster") or film.get("poster")
+
+    caption = (
+        f"🎲 *Случайный фильм*\n\n"
+        f"🎬 *{name}* ({year})\n"
+        f"⭐️ {rating}\n\n"
+        f"{description[:500]}{'...' if len(description) > 500 else ''}"
+    )
+
+    keyboard = InlineKeyboardMarkup(inline_keyboard=[
+        [
+            InlineKeyboardButton(text="📱 Смотреть в Telegram", web_app=WebAppInfo(url=f"{BASE_URL}/?id={movie_id}")),
+            InlineKeyboardButton(text="🌐 В браузере", url=f"{BASE_URL}/?id={movie_id}")
+        ],
+        [InlineKeyboardButton(text="🎲 Другой фильм", callback_data="random_next")]
+    ])
+
+    await message.answer_photo(
+        photo=poster,
+        caption=caption,
+        parse_mode="Markdown",
+        reply_markup=keyboard
+    )
