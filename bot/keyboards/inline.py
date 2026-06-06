@@ -37,13 +37,31 @@ def films_keyboard(films: list, page: int = 0) -> InlineKeyboardMarkup:
 
 def watch_keyboard(movie_id:int) -> InlineKeyboardMarkup:
     url = f'{BASE_URL}/?id={movie_id}'
-    return InlineKeyboardMarkup(inline_keyboard=[[
-        InlineKeyboardButton(
-            text="📱 Смотреть в Telegram",
-            web_app=WebAppInfo(url=url)
-        ),
-        InlineKeyboardButton(
-            text="🌐 В браузере",
-            url=url
-        )
-    ]])
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [
+            InlineKeyboardButton(
+                text="📱 Смотреть в Telegram",
+                web_app=WebAppInfo(url=url)
+            ),
+            InlineKeyboardButton(
+                text="🌐 В браузере",
+                url=url
+            )
+        ]
+    ])
+
+
+def get_subscription_keyboard() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="📢 Подписаться на канал", url="https://t.me/KinoLink31")],
+        [InlineKeyboardButton(text="✅ Я подписался", callback_data="check_subscription")]
+    ])
+
+
+def help_keyboard() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [
+            InlineKeyboardButton(text="🎬 Фильмы", callback_data="help_movies"),
+            InlineKeyboardButton(text="📺 Сериалы", callback_data="help_series")
+        ]
+    ])
