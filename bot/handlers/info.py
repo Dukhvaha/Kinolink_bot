@@ -2,15 +2,19 @@ from aiogram import Router, F
 from aiogram.types import CallbackQuery, Message
 
 from bot.keyboards.inline import help_keyboard
+from bot.services.statistics import log_event, track_user
 
 router = Router()
 
 @router.message(F.text == "🆘 Помощь")
 async def handle_help(message:Message):
+    track_user(message.from_user)
+    log_event(message.from_user.id, "help")
+
     await message.answer(
         "🆘 *Помощь*\n\n"
-        "Выберите, что хотите посмотреть, и я покажу короткую инструкцию.\n\n"
-        "Если что-то работает нестабильно, чаще всего помогает открыть контент через браузер.",
+        "Выбери сценарий ниже — покажу короткую инструкцию без лишней воды.\n\n"
+        "Если Mini App капризничает, открывай через браузер: обычно это самый стабильный вариант.",
         parse_mode="Markdown",
         reply_markup=help_keyboard()
     )
@@ -18,15 +22,17 @@ async def handle_help(message:Message):
 
 @router.callback_query(F.data == "help_movies")
 async def handle_movies_help(callback: CallbackQuery):
+    track_user(callback.from_user)
+    log_event(callback.from_user.id, "help_movies")
+
     await callback.message.edit_text(
         "🎬 *Просмотр фильмов*\n\n"
-        "1. Перейдите в раздел 🎬 *Найти фильм*\n"
-        "2. Введите название фильма\n"
-        "3. Выберите подходящий вариант из списка\n"
-        "4. Выберите способ просмотра:\n"
-        "• 📱 *Telegram Mini App* — для быстрого запуска внутри Telegram\n"
-        "• 🌐 *В браузере* — если Mini App недоступен или работает нестабильно\n\n"
-        "После открытия плеера фильм будет доступен для просмотра.\n\n"
+        "1. Нажми 🎬 *Найти фильм*\n"
+        "2. Напиши название\n"
+        "3. Выбери нужный вариант из списка\n"
+        "4. Открой плеер:\n"
+        "• 📱 *Telegram* — удобно внутри приложения\n"
+        "• 🌐 *Браузер* — стабильнее, если Telegram тормозит\n\n"
         "Если проблема сохраняется, свяжитесь с поддержкой 👉 @Sippaks",
         parse_mode="Markdown",
         reply_markup=help_keyboard()
@@ -36,20 +42,20 @@ async def handle_movies_help(callback: CallbackQuery):
 
 @router.callback_query(F.data == "help_series")
 async def handle_series_help(callback: CallbackQuery):
+    track_user(callback.from_user)
+    log_event(callback.from_user.id, "help_series")
+
     await callback.message.edit_text(
         "📺 *Просмотр сериалов*\n\n"
-        "1. Откройте раздел 🎬 *Найти фильм*\n"
-        "2. Введите название сериала\n"
-        "3. Выберите нужный вариант\n"
-        "4. Откройте через удобный способ:\n"
-        "• 📱 *Telegram Mini App*\n"
-        "• 🌐 *Браузер*\n"
-        "5. В плеере выберите источник *Vibix*\n"
-        "6. Укажите сезон и серию\n\n"
-        "*Если возникли сложности*\n\n"
-        "• Рекомендуем открыть контент через браузер — это наиболее стабильный вариант\n"
-        "• Убедитесь, что у вас установлена актуальная версия Telegram\n"
-        "• Перезапустите приложение и повторите попытку\n\n"
+        "1. Нажми 🎬 *Найти фильм*\n"
+        "2. Напиши название сериала\n"
+        "3. Выбери нужный результат\n"
+        "4. Открой плеер в Telegram или браузере\n"
+        "5. В плеере выбери сезон и серию\n\n"
+        "Если что-то не грузится:\n"
+        "• попробуй открыть через браузер\n"
+        "• обнови Telegram\n"
+        "• перезапусти приложение\n\n"
         "Если проблема сохраняется, свяжитесь с поддержкой 👉 @Sippaks",
         parse_mode="Markdown",
         reply_markup=help_keyboard()
@@ -57,10 +63,13 @@ async def handle_series_help(callback: CallbackQuery):
     await callback.answer()
 
 
-@router.message(F.text == "📢 По рекламе")
+@router.message(F.text == "📢 Сотрудничество")
 async def handle_ads(message:Message):
+    track_user(message.from_user)
+    log_event(message.from_user.id, "ads")
+
     await message.answer(
-        "📢 *По вопросам рекламы*\n\n"
+        "📢 *По вопросам сотрудничества*\n\n"
         "Пиши сюда 👉 @Sippaks",
         parse_mode="Markdown"
     )

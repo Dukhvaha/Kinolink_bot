@@ -8,6 +8,8 @@ if (window.Telegram?.WebApp) {
 
 const params = new URLSearchParams(window.location.search);
 const movieId = params.get("id");
+const PUBLISHER_ID = "678153547";
+const RENDEX_SDK_URL = "https://graphicslab.io/sdk/v2/rendex-sdk.min.js";
 
 // ─── HELPERS ───────────────────────────────────────────────
 function formatLength(min) {
@@ -23,12 +25,48 @@ function getRatingColor(rating) {
     return "rgba(192,57,43,0.4)";
 }
 
+function appendTextTag(container, text, className = "tag") {
+    const tag = document.createElement("span");
+    tag.className = className;
+    tag.textContent = text;
+    container.appendChild(tag);
+}
+
+function loadRendexSdk() {
+    const oldScript = document.getElementById("rendexSdk");
+    if (oldScript) oldScript.remove();
+
+    const script = document.createElement("script");
+    script.id = "rendexSdk";
+    script.src = `${RENDEX_SDK_URL}?v=${Date.now()}`;
+    document.body.appendChild(script);
+}
+
+function renderPlayer(kpId) {
+    const playerWrap = document.getElementById("rendexPlayer");
+    playerWrap.innerHTML = "";
+
+    const player = document.createElement("ins");
+    player.setAttribute("data-publisher-id", PUBLISHER_ID);
+    player.setAttribute("data-type", "kp");
+    player.setAttribute("data-id", kpId);
+    player.setAttribute("data-design", "2");
+    player.setAttribute("data-poster", "true");
+    player.setAttribute("data-width", "100%");
+    player.setAttribute("data-height", "450px");
+
+    playerWrap.appendChild(player);
+    loadRendexSdk();
+}
+
 // ─── RENDER ────────────────────────────────────────────────
 function renderMovie(movie) {
     // Poster
     const posterEl = document.getElementById("poster");
-    posterEl.src = `/proxy/poster?url=${encodeURIComponent(movie.poster)}`;
-    posterEl.onerror = () => { posterEl.src = movie.poster; };
+    if (movie.poster) {
+        posterEl.src = `/proxy/poster?url=${encodeURIComponent(movie.poster)}`;
+        posterEl.onerror = () => { posterEl.src = movie.poster; };
+    }
 
     // Titles
     document.title = `${movie.name} — КиноЛинк`;
@@ -57,32 +95,33 @@ function renderMovie(movie) {
         movie.film_length && { icon: "🕐", text: formatLength(movie.film_length) },
     ].filter(Boolean);
 
-    document.getElementById("metaRow").innerHTML = metaItems
-        .map(p => `<div class="meta-pill"><span class="icon">${p.icon}</span>${p.text}</div>`)
-        .join("");
+    const metaRow = document.getElementById("metaRow");
+    metaRow.innerHTML = "";
+    metaItems.forEach((item) => {
+        const pill = document.createElement("div");
+        const icon = document.createElement("span");
+
+        pill.className = "meta-pill";
+        icon.className = "icon";
+        icon.textContent = item.icon;
+        pill.append(icon, document.createTextNode(String(item.text)));
+        metaRow.appendChild(pill);
+    });
 
     // Genre tags
-    document.getElementById("genres").innerHTML = (movie.genres || [])
-        .map(g => `<span class="tag">${g}</span>`)
-        .join("");
+    const genres = document.getElementById("genres");
+    genres.innerHTML = "";
+    (movie.genres || []).forEach((genre) => appendTextTag(genres, genre));
 
     // Country tags
-    document.getElementById("countries").innerHTML = (movie.countries || [])
-        .map(c => `<span class="tag country">${c}</span>`)
-        .join("");
+    const countries = document.getElementById("countries");
+    countries.innerHTML = "";
+    (movie.countries || []).forEach((country) => appendTextTag(countries, country, "tag country"));
 
     // Description
     if (movie.description) {
         document.getElementById("description").innerText = movie.description;
     }
-
-    // Player
-    const playerDiv = document.getElementById("kinobd");
-    playerDiv.setAttribute("data-kinopoisk", movie.id);
-
-    const script = document.createElement("script");
-    script.src = "https://kinobd.net/js/player_.js";
-    document.body.appendChild(script);
 
     // Show content, hide skeleton
     document.getElementById("loadingState").classList.remove("active");
@@ -95,6 +134,8 @@ async function loadMovie() {
         showError();
         return;
     }
+
+    renderPlayer(movieId);
 
     try {
         const res = await fetch(`/movies/${movieId}`);

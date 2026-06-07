@@ -378,8 +378,9 @@ h1 {
     min-height: 200px;
 }
 
-#kinobd {
+#rendexPlayer {
     width: 100%;
+    min-height: 450px;
 }
 
 /* ─── VISIBILITY STATES ─── */

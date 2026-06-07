@@ -40,11 +40,11 @@ def watch_keyboard(movie_id:int) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(inline_keyboard=[
         [
             InlineKeyboardButton(
-                text="📱 Смотреть в Telegram",
+                text="📱 Открыть в Telegram",
                 web_app=WebAppInfo(url=url)
             ),
             InlineKeyboardButton(
-                text="🌐 В браузере",
+                text="🌐 Открыть в браузере",
                 url=url
             )
         ]
@@ -61,7 +61,7 @@ def get_subscription_keyboard() -> InlineKeyboardMarkup:
 def help_keyboard() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(inline_keyboard=[
         [
-            InlineKeyboardButton(text="🎬 Фильмы", callback_data="help_movies"),
-            InlineKeyboardButton(text="📺 Сериалы", callback_data="help_series")
+            InlineKeyboardButton(text="🎬 Как смотреть фильмы", callback_data="help_movies"),
+            InlineKeyboardButton(text="📺 Как смотреть сериалы", callback_data="help_series")
         ]
     ])

@@ -17,6 +17,18 @@ app.add_middleware(
 )
 
 app.include_router(movies_router)
+
+
+@app.middleware("http")
+async def disable_frontend_cache(request, call_next):
+    response = await call_next(request)
+    if request.url.path == "/" or request.url.path.endswith((".html", ".js", ".css")):
+        response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+    return response
+
+
 app.mount('/', StaticFiles(directory='frontend', html=True), name='frontend')
 
 if __name__ == "__main__":
