@@ -14,11 +14,18 @@ router = Router()
 @router.callback_query(F.data.startswith("movie_"))
 async def handle_movie_select(callback: CallbackQuery, state: FSMContext):
     track_user(callback.from_user)
-    movie_id = int(callback.data.split("_")[1])
-    log_event(callback.from_user.id, "movie_open", str(movie_id))
+    parts = callback.data.split("_")
+    if len(parts) == 2:
+        media_type = "movie"
+        movie_id = int(parts[1])
+    else:
+        media_type = parts[1]
+        movie_id = int(parts[2])
+
+    log_event(callback.from_user.id, "movie_open", f"{media_type}:{movie_id}")
 
     try:
-        movie = await get_movie(movie_id)
+        movie = await get_movie(movie_id, media_type)
     except Exception:
         await callback.answer("❌ Что-то пошло не так.", show_alert=True)
         return
@@ -32,7 +39,7 @@ async def handle_movie_select(callback: CallbackQuery, state: FSMContext):
     poster = movie.get("poster")
     poster_photo = await get_poster_photo(poster)
     caption = build_movie_caption(movie)
-    keyboard = watch_keyboard(movie_id)
+    keyboard = watch_keyboard(movie_id, media_type)
 
     try:
         await callback.message.delete()
@@ -49,7 +56,10 @@ async def handle_movie_select(callback: CallbackQuery, state: FSMContext):
                 caption=caption,
                 reply_markup=keyboard
             )
-            await callback.message.answer("Выбери способ просмотра:", reply_markup=home_keyboard())
+            await callback.message.answer(
+                "🍿 Приятного просмотра! Чтобы вернуться в меню — нажми 🏠 Домой.",
+                reply_markup=home_keyboard()
+            )
             await callback.answer()
             return
         except TelegramBadRequest:
@@ -62,7 +72,10 @@ async def handle_movie_select(callback: CallbackQuery, state: FSMContext):
                 caption=caption,
                 reply_markup=keyboard
             )
-            await callback.message.answer("Выбери способ просмотра:", reply_markup=home_keyboard())
+            await callback.message.answer(
+                "🍿 Приятного просмотра! Чтобы вернуться в меню — нажми 🏠 Домой.",
+                reply_markup=home_keyboard()
+            )
             await callback.answer()
             return
         except TelegramBadRequest:
@@ -72,6 +85,9 @@ async def handle_movie_select(callback: CallbackQuery, state: FSMContext):
         caption,
         reply_markup=keyboard
     )
-    await callback.message.answer("Выбери способ просмотра:", reply_markup=home_keyboard())
+    await callback.message.answer(
+        "🍿 Приятного просмотра! Чтобы вернуться в меню — нажми 🏠 Домой.",
+        reply_markup=home_keyboard()
+    )
 
     await callback.answer()

@@ -8,6 +8,7 @@ if (window.Telegram?.WebApp) {
 
 const params = new URLSearchParams(window.location.search);
 const movieId = params.get("id");
+const mediaType = params.get("type") || "movie";
 const PUBLISHER_ID = "678153547";
 const RENDEX_SDK_URL = "https://graphicslab.io/sdk/v2/rendex-sdk.min.js";
 
@@ -42,14 +43,22 @@ function loadRendexSdk() {
     document.body.appendChild(script);
 }
 
-function renderPlayer(kpId) {
+function renderPlayer(playerType, playerId) {
     const playerWrap = document.getElementById("rendexPlayer");
     playerWrap.innerHTML = "";
 
+    if (!playerId) {
+        const empty = document.createElement("div");
+        empty.className = "player-empty";
+        empty.textContent = "Плеер для этого фильма пока недоступен.";
+        playerWrap.appendChild(empty);
+        return;
+    }
+
     const player = document.createElement("ins");
     player.setAttribute("data-publisher-id", PUBLISHER_ID);
-    player.setAttribute("data-type", "kp");
-    player.setAttribute("data-id", kpId);
+    player.setAttribute("data-type", playerType || "imdb");
+    player.setAttribute("data-id", playerId);
     player.setAttribute("data-design", "2");
     player.setAttribute("data-poster", "true");
     player.setAttribute("data-width", "100%");
@@ -64,8 +73,7 @@ function renderMovie(movie) {
     // Poster
     const posterEl = document.getElementById("poster");
     if (movie.poster) {
-        posterEl.src = `/proxy/poster?url=${encodeURIComponent(movie.poster)}`;
-        posterEl.onerror = () => { posterEl.src = movie.poster; };
+        posterEl.src = movie.poster;
     }
 
     // Titles
@@ -76,7 +84,7 @@ function renderMovie(movie) {
         document.getElementById("originalTitle").innerText = movie.original_name;
     }
 
-    // Kinopoisk rating
+    // Primary rating
     if (movie.rating && movie.rating > 0) {
         document.getElementById("ratingNum").innerText = movie.rating.toFixed(1);
         document.getElementById("ratingBadge").style.borderColor = getRatingColor(movie.rating);
@@ -123,6 +131,8 @@ function renderMovie(movie) {
         document.getElementById("description").innerText = movie.description;
     }
 
+    renderPlayer(movie.player_type, movie.player_id);
+
     // Show content, hide skeleton
     document.getElementById("loadingState").classList.remove("active");
     document.getElementById("loadedState").classList.add("active");
@@ -135,10 +145,8 @@ async function loadMovie() {
         return;
     }
 
-    renderPlayer(movieId);
-
     try {
-        const res = await fetch(`/movies/${movieId}`);
+        const res = await fetch(`/movies/${mediaType}/${movieId}`);
         if (!res.ok) throw new Error("not found");
         const movie = await res.json();
         renderMovie(movie);

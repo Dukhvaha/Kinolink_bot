@@ -18,28 +18,28 @@ async def handle_novelties(message: Message, state: FSMContext, bot: Bot):
     log_event(message.from_user.id, "popular")
 
     if not await is_subscribed(bot, message.from_user.id):
-        await message.answer("Сначала нужна подписка на канал. После этого подборка откроется.")
+        await message.answer("❌ Для использования бота подпишитесь на канал!")
         return
 
     await clear_last_results_keyboard(bot, state, message.chat.id)
-    msg = await message.answer("Собираю популярное...")
+    msg = await message.answer("⏳ Загружаю новинки...")
 
     try:
         films = await get_novelties()
     except Exception:
         await msg.delete()
-        await message.answer("Не удалось загрузить подборку. Попробуй чуть позже.")
+        await message.answer("❌ Ошибка загрузки новинок.")
         return
 
     await msg.delete()
 
     if not films:
-        await message.answer("Пока ничего не нашел.", reply_markup=home_keyboard())
+        await message.answer("😔 Новинки не найдены.", reply_markup=home_keyboard())
         return
 
     films = films[:6]
     results_message = await message.answer(
-        "🔥 Сейчас часто смотрят. Выбери фильм:",
+        "🔥 *Новинки — выбери фильм:*",
         parse_mode="Markdown",
         reply_markup=films_keyboard(films, page=0)
     )

@@ -17,9 +17,9 @@ async def search_movies(query: str) -> list:
     return response.json()
 
 
-async def get_movie(movie_id: int) -> dict | None:
+async def get_movie(movie_id: int, media_type: str = "movie") -> dict | None:
     async with httpx.AsyncClient(timeout=10.0) as client:
-        response = await client.get(f"{BACKEND_URL}/movies/{movie_id}")
+        response = await client.get(f"{BACKEND_URL}/movies/{media_type}/{movie_id}")
 
     if response.status_code != 200:
         return None
@@ -58,11 +58,13 @@ def build_movie_caption(movie: dict, title_prefix: str | None = None) -> str:
     name = movie.get("name") or "Без названия"
     year = movie.get("year") or ""
     rating = movie.get("rating", 0)
+    media_type = movie.get("media_type", "movie")
     description = movie.get("description") or "Описание отсутствует."
     short_description = description[:500]
     suffix = "..." if len(description) > 500 else ""
 
-    title = f"🎬 {name} ({year})"
+    icon = "📺" if media_type == "tv" else "🎬"
+    title = f"{icon} {name} ({year})"
     if title_prefix:
         title = f"{title_prefix}\n\n{title}"
 

@@ -383,6 +383,16 @@ h1 {
     min-height: 450px;
 }
 
+.player-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 450px;
+    color: var(--muted);
+    text-align: center;
+    padding: 24px;
+}
+
 /* ─── VISIBILITY STATES ─── */
 .loading-state { display: none; }
 .loading-state.active { display: block; }

@@ -22,13 +22,13 @@ async def handle_search_button(message: Message, state: FSMContext, bot: Bot):
     log_event(message.from_user.id, "search_button")
 
     if not await is_subscribed(bot, message.from_user.id):
-        await message.answer("Сначала нужна подписка на канал. После этого поиск сразу откроется.")
+        await message.answer("❌ Для использования бота подпишитесь на канал!")
         return
 
     await clear_last_results_keyboard(bot, state, message.chat.id)
     await state.set_state(SearchState.waiting_for_query)
     await message.answer(
-        "🔎 Напиши название фильма или сериала.\n\nНапример: *Первый мститель* или *Клан Сопрано*",
+        "🔍 Введите название фильма или сериала:",
         parse_mode="Markdown",
         reply_markup=home_keyboard()
     )
@@ -40,7 +40,7 @@ async def handle_query(message: Message, state: FSMContext, bot: Bot):
 
     if not message.text:
         await message.answer(
-            "Я ищу по тексту. Напиши название фильма или сериала.",
+            "Введите название фильма или сериала текстом.",
             reply_markup=home_keyboard()
         )
         return
@@ -48,7 +48,7 @@ async def handle_query(message: Message, state: FSMContext, bot: Bot):
     query = message.text.strip()
     if not query:
         await message.answer(
-            "Пустой запрос не сработает. Напиши название, и я поищу.",
+            "Введите название фильма или сериала текстом.",
             reply_markup=home_keyboard()
         )
         return
@@ -57,26 +57,26 @@ async def handle_query(message: Message, state: FSMContext, bot: Bot):
     await clear_last_results_keyboard(bot, state, message.chat.id)
     await state.clear()
 
-    searching_msg = await message.answer("Ищу варианты...")
+    searching_msg = await message.answer("⏳ Ищу...")
 
     try:
         films = await search_movies(query)
     except Exception:
         await searching_msg.delete()
-        await message.answer("Сервер временно не отвечает. Попробуй еще раз чуть позже.")
+        await message.answer("❌ Сервер временно недоступен. Попробуй чуть позже.")
         return
 
     await searching_msg.delete()
 
     if not films:
         await message.answer(
-            "Ничего не нашел. Попробуй другое название или убери лишние слова.",
+            "😔 Ничего не найдено, попробуй другой запрос.",
             reply_markup=home_keyboard()
         )
         return
 
     results_message = await message.answer(
-        f"Нашел по запросу *{query}*. Выбери подходящий вариант:",
+        f"🎬 Результаты по запросу *{query}*:",
         parse_mode="Markdown",
         reply_markup=films_keyboard(films, page=0)
     )

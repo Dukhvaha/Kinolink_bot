@@ -16,8 +16,9 @@ router = Router()
 
 async def send_home(message: Message):
     await message.answer(
-        "👋 *KINOLINK на связи*\n\n"
-        "Найдем фильм или сериал за пару секунд. Выбери действие ниже — я подхвачу.",
+        "👋 Добро пожаловать в *KINOLINK | ФИЛЬМЫ И СЕРИАЛЫ*!\n\n"
+        "🎬 Здесь ты можешь найти фильм или сериал и смотреть прямо в Telegram.\n\n"
+        "Просто выбери нужную кнопку в меню! 🍿",
         parse_mode="Markdown",
         reply_markup=main_keyboard(message.from_user.id in ADMIN_IDS)
     )
@@ -30,8 +31,9 @@ async def cmd_start(message: Message, bot: Bot):
 
     if not await is_subscribed(bot, message.from_user.id):
         await message.answer(
-            "👋 Привет! Для доступа к поиску нужна подписка на канал.\n\n"
-            "Подпишись и нажми *Я подписался* — сразу продолжим.",
+            "👋 Привет!\n\n"
+            "Для использования бота необходимо подписаться на наш канал.\n"
+            "После подписки нажми кнопку *Я подписался* ✅",
             parse_mode="Markdown",
             reply_markup=get_subscription_keyboard()
         )

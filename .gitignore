@@ -1,6 +1,6 @@
 .idea/
+.DS_Store
 __pycache__/
 *.pyc
 .env
-config.py
 bot_stats.sqlite3

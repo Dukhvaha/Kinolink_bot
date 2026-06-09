@@ -20,7 +20,7 @@ async def handle_subscription_check(callback: CallbackQuery, bot: Bot):
 
     await callback.message.delete()
     await callback.message.answer(
-        "✅ Подписка подтверждена.\n\n"
+        "✅ Отлично, подписка подтверждена!\n\n"
         "Теперь можно искать фильмы и сериалы.",
         parse_mode="Markdown",
         reply_markup=main_keyboard(callback.from_user.id in ADMIN_IDS)

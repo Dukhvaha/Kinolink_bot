@@ -15,10 +15,12 @@ def films_keyboard(films: list, page: int = 0) -> InlineKeyboardMarkup:
         name = film.get("name", "Без названия")
         year = film.get("year", "")
         film_id = film.get("id")
+        media_type = film.get("media_type", "movie")
+        icon = "📺" if media_type == "tv" else "🎬"
         buttons.append([
             InlineKeyboardButton(
-                text=f"🎬 {name} ({year})",
-                callback_data=f"movie_{film_id}"
+                text=f"{icon} {name} ({year})",
+                callback_data=f"movie_{media_type}_{film_id}"
             )
         ])
 
@@ -35,8 +37,8 @@ def films_keyboard(films: list, page: int = 0) -> InlineKeyboardMarkup:
 
     return InlineKeyboardMarkup(inline_keyboard=buttons)
 
-def watch_keyboard(movie_id:int) -> InlineKeyboardMarkup:
-    url = f'{BASE_URL}/?id={movie_id}'
+def watch_keyboard(movie_id:int, media_type: str = "movie") -> InlineKeyboardMarkup:
+    url = f'{BASE_URL}/?type={media_type}&id={movie_id}'
     return InlineKeyboardMarkup(inline_keyboard=[
         [
             InlineKeyboardButton(
