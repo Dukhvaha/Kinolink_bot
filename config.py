@@ -10,6 +10,7 @@ BACKEND_URL = os.getenv('BACKEND_URL')
 VIBIX_PUBLISHER_ID = os.getenv('VIBIX_PUBLISHER_ID', '678153547')
 TMDB_READ_TOKEN = os.getenv("TMDB_READ_TOKEN")
 TMDB_API_BASE = os.getenv("TMDB_API_BASE", "https://api.themoviedb.org/3")
+STORAGE_CHANNEL_ID = os.getenv("STORAGE_CHANNEL_ID")
 ADMIN_IDS = {
     int(user_id)
     for user_id in os.getenv("ADMIN_IDS", "").replace(" ", "").split(",")

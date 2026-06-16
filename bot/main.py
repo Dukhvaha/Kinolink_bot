@@ -12,14 +12,18 @@ from bot.handlers.start import router as start_router
 from bot.handlers.search import router as search_router
 from bot.handlers.stats import router as stats_router
 from bot.handlers.subscription import router as subscription_router
+from bot.handlers.video_storage import router as video_storage_router
 from bot.services.statistics import init_stats_db
+from bot.services.telegram_video_storage import init_telegram_video_db
 
 async def main():
     logging.basicConfig(level=logging.INFO)
     init_stats_db()
+    init_telegram_video_db()
     bot = Bot(BOT_API_TOKEN)
     dp = Dispatcher(storage=MemoryStorage())
 
+    dp.include_router(video_storage_router)
     dp.include_router(start_router)
     dp.include_router(subscription_router)
     dp.include_router(search_router)

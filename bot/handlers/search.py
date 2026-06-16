@@ -82,6 +82,7 @@ async def handle_query(message: Message, state: FSMContext, bot: Bot):
     )
     await state.update_data(
         films=films,
+        current_page=0,
         results_message_id=results_message.message_id
     )
 
@@ -100,6 +101,7 @@ async def handle_pagination(callback: CallbackQuery, state: FSMContext):
     await callback.message.edit_reply_markup(
         reply_markup=films_keyboard(films, page=page)
     )
+    await state.update_data(current_page=page)
     await callback.answer()
 
 

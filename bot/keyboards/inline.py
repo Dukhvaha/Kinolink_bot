@@ -37,8 +37,9 @@ def films_keyboard(films: list, page: int = 0) -> InlineKeyboardMarkup:
 
     return InlineKeyboardMarkup(inline_keyboard=buttons)
 
-def watch_keyboard(movie_id:int, media_type: str = "movie") -> InlineKeyboardMarkup:
+def watch_keyboard(movie_id: int, media_type: str = "movie", imdb_id: str | None = None) -> InlineKeyboardMarkup:
     url = f'{BASE_URL}/?type={media_type}&id={movie_id}'
+    telegram_callback = f"watch_tg_{media_type}_{imdb_id}" if imdb_id else "watch_tg_missing"
     return InlineKeyboardMarkup(inline_keyboard=[
         [
             InlineKeyboardButton(
@@ -48,6 +49,18 @@ def watch_keyboard(movie_id:int, media_type: str = "movie") -> InlineKeyboardMar
             InlineKeyboardButton(
                 text="🌐 Открыть в браузере",
                 url=url
+            )
+        ],
+        [
+            InlineKeyboardButton(
+                text="▶️ Смотреть в Telegram",
+                callback_data=telegram_callback
+            )
+        ],
+        [
+            InlineKeyboardButton(
+                text="↩️ Назад к выбору",
+                callback_data="back_to_results"
             )
         ]
     ])
