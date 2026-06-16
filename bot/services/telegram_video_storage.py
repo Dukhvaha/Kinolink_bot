@@ -3,12 +3,12 @@ import re
 import sqlite3
 from dataclasses import dataclass
 from datetime import datetime
-from html import escape
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
 from aiogram import Bot
 from aiogram.exceptions import TelegramAPIError
+from aiogram.types import MessageEntity
 
 DB_PATH = Path(__file__).resolve().parents[2] / "telegram_videos.sqlite3"
 TZ = ZoneInfo("Europe/Moscow")
@@ -476,25 +476,44 @@ def format_record_title(video: sqlite3.Row) -> str:
     return f"{video['title']} — {video['voiceover']}"
 
 
-def build_delivery_caption(video: sqlite3.Row, bot_username: str | None) -> str:
+def telegram_offset(text: str) -> int:
+    return len(text.encode("utf-16-le")) // 2
+
+
+def build_delivery_caption(
+    video: sqlite3.Row,
+    bot_username: str | None,
+) -> tuple[str, list[MessageEntity]]:
     icon = "📺" if video["content_type"] == "series" else "🎬"
-    lines = [f"{icon} <b>{escape(video['title'])}</b>"]
+    lines = [f"{icon} {video['title']}"]
 
     if video["year"]:
-        lines.append(f"📅 Год: <b>{video['year']}</b>")
+        lines.append(f"📅 Год: {video['year']}")
 
     if video["content_type"] == "series":
-        lines.append(f"📌 Сезон: <b>{video['season']}</b>")
-        lines.append(f"🎞 Серия: <b>{video['episode']}</b>")
+        lines.append(f"📌 Сезон: {video['season']}")
+        lines.append(f"🎞 Серия: {video['episode']}")
 
-    lines.append(f"🎧 Озвучка: <b>{escape(video['voiceover'])}</b>")
+    lines.append(f"🎧 Озвучка: {video['voiceover']}")
+
+    body = "\n".join(lines)
+    footer_icon = "🎬"
+    footer = f"{footer_icon} KINOLINK"
+    caption = f"{body}\n\n{footer}"
+    footer_offset = telegram_offset(f"{body}\n\n")
+    entities = []
 
     if bot_username:
-        footer = f'<a href="https://t.me/{escape(bot_username)}">KINOLINK</a>'
-    else:
-        footer = "KINOLINK"
+        entities.append(
+            MessageEntity(
+                type="text_link",
+                offset=footer_offset + telegram_offset(f"{footer_icon} "),
+                length=telegram_offset("KINOLINK"),
+                url=f"https://t.me/{bot_username}",
+            )
+        )
 
-    return "\n".join(lines) + f"\n\n{footer}"
+    return caption, entities
 
 
 async def send_video_record_to_user(bot: Bot, user_chat_id: int, record_id: int) -> bool:
@@ -503,7 +522,7 @@ async def send_video_record_to_user(bot: Bot, user_chat_id: int, record_id: int)
         return False
 
     bot_info = await bot.get_me()
-    caption = build_delivery_caption(video, bot_info.username)
+    caption, caption_entities = build_delivery_caption(video, bot_info.username)
 
     try:
         if video["media_type"] == "video":
@@ -511,14 +530,14 @@ async def send_video_record_to_user(bot: Bot, user_chat_id: int, record_id: int)
                 chat_id=user_chat_id,
                 video=video["file_id"],
                 caption=caption,
-                parse_mode="HTML",
+                caption_entities=caption_entities,
             )
         elif video["media_type"] == "document":
             await bot.send_document(
                 chat_id=user_chat_id,
                 document=video["file_id"],
                 caption=caption,
-                parse_mode="HTML",
+                caption_entities=caption_entities,
             )
         else:
             logger.warning("Unsupported Telegram media_type: %s", video["media_type"])
@@ -537,7 +556,7 @@ async def send_video_record_to_user(bot: Bot, user_chat_id: int, record_id: int)
             from_chat_id=video["storage_chat_id"],
             message_id=video["message_id"],
             caption=caption,
-            parse_mode="HTML",
+            caption_entities=caption_entities,
         )
         return True
     except TelegramAPIError as exc:
