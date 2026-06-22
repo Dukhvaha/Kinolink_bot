@@ -1,8 +1,13 @@
-if (window.Telegram?.WebApp) {
+const telegramWebApp = window.Telegram?.WebApp;
+
+if (telegramWebApp) {
+    telegramWebApp.ready();
+    telegramWebApp.expand();
+
     try {
-        window.Telegram.WebApp.requestFullscreen();
+        telegramWebApp.requestFullscreen();
     } catch (e) {
-        window.Telegram.WebApp.expand();
+        // Fullscreen is not available in every Telegram client.
     }
 }
 
@@ -61,6 +66,7 @@ function renderPlayer(playerType, playerId) {
     player.setAttribute("data-id", playerId);
     player.setAttribute("data-design", "2");
     player.setAttribute("data-poster", "true");
+    player.setAttribute("data-nopreload", "true");
     player.setAttribute("data-width", "100%");
     player.setAttribute("data-height", "450px");
 
