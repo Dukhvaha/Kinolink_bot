@@ -17,6 +17,33 @@ const mediaType = params.get("type") || "movie";
 const PUBLISHER_ID = "678153547";
 const RENDEX_SDK_URL = "https://graphicslab.io/sdk/v2/rendex-sdk.min.js";
 
+function trackView() {
+    const user = telegramWebApp?.initDataUnsafe?.user;
+    const payload = {
+        event_type: telegramWebApp ? "mini_app_open" : "site_open",
+        media_type: mediaType,
+        movie_id: movieId ? Number(movieId) : null,
+        user_id: user?.id || null,
+        username: user?.username || null,
+        first_name: user?.first_name || null,
+    };
+
+    const body = JSON.stringify(payload);
+
+    if (navigator.sendBeacon) {
+        const blob = new Blob([body], { type: "application/json" });
+        navigator.sendBeacon("/track-view", blob);
+        return;
+    }
+
+    fetch("/track-view", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body,
+        keepalive: true,
+    }).catch(() => {});
+}
+
 // ─── HELPERS ───────────────────────────────────────────────
 function formatLength(min) {
     if (!min) return null;
@@ -166,4 +193,5 @@ function showError() {
     document.getElementById("errorScreen").classList.add("active");
 }
 
+trackView();
 loadMovie();

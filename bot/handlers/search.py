@@ -16,6 +16,14 @@ class SearchState(StatesGroup):
     waiting_for_query = State()
 
 
+def guess_search_type(films: list[dict]) -> str:
+    if not films:
+        return "search_movie"
+
+    first_media_type = films[0].get("media_type")
+    return "search_series" if first_media_type == "tv" else "search_movie"
+
+
 @router.message(F.text == "🎬 Найти фильм")
 async def handle_search_button(message: Message, state: FSMContext, bot: Bot):
     track_user(message.from_user)
@@ -53,7 +61,6 @@ async def handle_query(message: Message, state: FSMContext, bot: Bot):
         )
         return
 
-    log_event(message.from_user.id, "search", query[:120])
     await clear_last_results_keyboard(bot, state, message.chat.id)
     await state.clear()
 
@@ -69,11 +76,16 @@ async def handle_query(message: Message, state: FSMContext, bot: Bot):
     await searching_msg.delete()
 
     if not films:
+        log_event(message.from_user.id, "search", query[:120])
         await message.answer(
             "😔 Ничего не найдено, попробуй другой запрос.",
             reply_markup=home_keyboard()
         )
         return
+
+    normalized_query = query[:120]
+    log_event(message.from_user.id, "search", normalized_query)
+    log_event(message.from_user.id, guess_search_type(films), normalized_query)
 
     results_message = await message.answer(
         f"🎬 Результаты по запросу *{query}*:",

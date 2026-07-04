@@ -392,13 +392,15 @@ async def handle_telegram_send(callback: CallbackQuery, bot: Bot):
         await callback.answer("Не удалось отправить видео.", show_alert=True)
         return
 
-    log_event(callback.from_user.id, "telegram_send", str(record_id))
+    log_event(callback.from_user.id, "telegram_send_attempt", str(record_id))
     await callback.answer("Отправляю видео...")
     record = get_telegram_video_by_id(record_id)
     sent = await send_video_record_to_user(bot, callback.message.chat.id, record_id)
     if not sent:
         await callback.message.answer("Не удалось отправить Telegram-видео. Попробуй Mini App или браузер.")
         return
+
+    log_event(callback.from_user.id, "telegram_video_sent", str(record_id))
 
     if record:
         keyboard = after_send_keyboard(record)
