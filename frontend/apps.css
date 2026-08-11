@@ -1,0 +1,195 @@
+:root {
+    --bg: #080810;
+    --surface: #11111b;
+    --surface-raised: #181823;
+    --border: rgba(255, 255, 255, 0.09);
+    --text: #f0eee8;
+    --muted: #8a8998;
+    --red: #ff2d2d;
+    --gold: #e8c97a;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    background: var(--bg);
+}
+
+body {
+    min-height: 100vh;
+    margin: 0;
+    color: var(--text);
+    background: var(--bg);
+    font-family: "Mulish", system-ui, sans-serif;
+}
+
+a {
+    color: inherit;
+}
+
+.apps-shell {
+    width: min(1080px, calc(100% - 32px));
+    margin: 0 auto;
+    padding: max(24px, env(safe-area-inset-top)) 0 max(48px, env(safe-area-inset-bottom));
+}
+
+.apps-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 48px;
+    border-bottom: 1px solid var(--border);
+}
+
+.brand {
+    color: var(--red);
+    font-family: "Unbounded", sans-serif;
+    font-size: 20px;
+    font-weight: 900;
+    letter-spacing: 0;
+    text-decoration: none;
+}
+
+.brand span {
+    color: var(--text);
+    font-weight: 400;
+}
+
+.header-label,
+.app-kicker,
+.apps-heading p {
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0;
+    text-transform: uppercase;
+}
+
+.apps-heading {
+    padding: 56px 0 28px;
+}
+
+.apps-heading p {
+    margin: 0 0 10px;
+    color: var(--gold);
+}
+
+.apps-heading h1 {
+    margin: 0;
+    font-family: "Unbounded", sans-serif;
+    font-size: clamp(28px, 5vw, 48px);
+    line-height: 1.12;
+    letter-spacing: 0;
+}
+
+.apps-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.app-card {
+    min-width: 0;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+    text-decoration: none;
+}
+
+a.app-card {
+    transition: border-color 180ms ease, transform 180ms ease, background 180ms ease;
+}
+
+a.app-card:hover,
+a.app-card:focus-visible {
+    border-color: rgba(232, 201, 122, 0.45);
+    background: var(--surface-raised);
+    transform: translateY(-3px);
+}
+
+a.app-card:focus-visible {
+    outline: 3px solid rgba(232, 201, 122, 0.28);
+    outline-offset: 3px;
+}
+
+.app-card-media {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    border-bottom: 1px solid var(--border);
+}
+
+.app-card-media--viewer {
+    display: grid;
+    place-items: center;
+    background: #160d12;
+}
+
+.play-mark {
+    display: grid;
+    width: 72px;
+    aspect-ratio: 1;
+    place-items: center;
+    border: 1px solid rgba(255, 45, 45, 0.55);
+    border-radius: 50%;
+    color: var(--red);
+    font-size: 28px;
+    padding-left: 4px;
+}
+
+.app-card-copy {
+    padding: 22px;
+}
+
+.app-card-copy h2 {
+    margin: 8px 0 10px;
+    font-family: "Unbounded", sans-serif;
+    font-size: 22px;
+    letter-spacing: 0;
+}
+
+.app-card-copy p {
+    min-height: 48px;
+    margin: 0 0 18px;
+    color: var(--muted);
+    line-height: 1.5;
+}
+
+.app-action,
+.app-state {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 36px;
+    font-weight: 700;
+}
+
+.app-action {
+    color: var(--gold);
+}
+
+.app-state {
+    color: #777684;
+}
+
+@media (max-width: 680px) {
+    .apps-shell {
+        width: min(100% - 20px, 1080px);
+    }
+
+    .apps-heading {
+        padding: 38px 0 22px;
+    }
+
+    .apps-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .app-card-copy p {
+        min-height: 0;
+    }
+}

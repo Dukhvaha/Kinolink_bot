@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#080810">
+    <title>Movie Roulette — KINOLINK</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;700;900&family=Mulish:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="/roulette.css?v=roulette-1">
+</head>
+<body>
+<div class="roulette-shell">
+    <header class="roulette-header">
+        <a class="back-link" href="/apps" aria-label="Назад к приложениям">←</a>
+        <a class="brand" href="/apps">KINO<span>LINK</span></a>
+        <span class="app-name">Movie Roulette</span>
+    </header>
+
+    <main class="roulette-layout">
+        <section class="roulette-workspace" aria-label="Рулетка">
+            <div class="workspace-title">
+                <div>
+                    <span>Случайный выбор</span>
+                    <h1>Что смотрим сегодня?</h1>
+                </div>
+                <span class="total-badge" id="totalBadge">0 позиций</span>
+            </div>
+
+            <div class="wheel">
+                <div class="wheel-pointer" aria-hidden="true"></div>
+                <div class="reel-window">
+                    <div class="reel" id="reel" aria-live="polite"></div>
+                </div>
+            </div>
+
+            <button class="primary-button" id="spinButton" type="button" disabled>
+                <span aria-hidden="true">▶</span>
+                Запустить рулетку
+            </button>
+        </section>
+
+        <aside class="list-panel">
+            <section class="import-section" aria-labelledby="importTitle">
+                <div class="import-title">
+                    <span class="imdb-mark">IMDb</span>
+                    <div>
+                        <h2 id="importTitle">Your Watchlist</h2>
+                        <p>CSV хранится только на этом устройстве</p>
+                    </div>
+                </div>
+                <input id="csvInput" type="file" accept=".csv,text/csv" hidden>
+                <div class="import-actions">
+                    <button class="imdb-button" id="importButton" type="button">Импортировать CSV</button>
+                    <button class="text-button" id="demoButton" type="button">Демо</button>
+                </div>
+                <p class="status" id="importStatus" role="status">Экспортируй Watchlist из IMDb и выбери CSV-файл.</p>
+            </section>
+
+            <label class="field-label" for="titleInput">Позиции</label>
+            <textarea id="titleInput" spellcheck="false" placeholder="Один фильм или сериал на строку"></textarea>
+
+            <div class="list-toolbar">
+                <button class="text-button" id="refreshButton" type="button">Обновить список</button>
+                <button class="text-button text-button--danger" id="clearButton" type="button">Очистить</button>
+            </div>
+
+            <div class="filters" id="filters" role="group" aria-label="Фильтр списка">
+                <button class="filter is-active" type="button" data-filter="all" aria-pressed="true">Все <span>0</span></button>
+                <button class="filter" type="button" data-filter="movie" aria-pressed="false">Фильмы <span>0</span></button>
+                <button class="filter" type="button" data-filter="tv" aria-pressed="false">Сериалы <span>0</span></button>
+                <button class="filter" type="button" data-filter="anime" aria-pressed="false">Аниме <span>0</span></button>
+            </div>
+
+            <div class="movie-list" id="movieList" aria-live="polite"></div>
+        </aside>
+
+        <section class="result-section" id="resultSection" aria-live="polite">
+            <div class="empty-result">
+                <span>?</span>
+                <p>Здесь появится выбор рулетки</p>
+            </div>
+        </section>
+    </main>
+</div>
+
+<script src="/roulette-core.js?v=roulette-1"></script>
+<script src="/roulette.js?v=roulette-1" defer></script>
+</body>
+</html>

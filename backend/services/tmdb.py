@@ -1,4 +1,5 @@
 import httpx
+import re
 from fastapi import HTTPException
 
 from config import TMDB_API_BASE, TMDB_READ_TOKEN
@@ -175,3 +176,145 @@ async def get_popular() -> list[dict]:
             items.append(normalized)
 
     return items[:12]
+
+
+def normalize_match_title(value: str | None) -> str:
+    return re.sub(r"[^a-z0-9а-яё]+", "", (value or "").casefold())
+
+
+def tmdb_media_type(item: dict, fallback: str | None = None) -> str | None:
+    media_type = item.get("media_type") or fallback
+    return media_type if media_type in {"movie", "tv"} else None
+
+
+def tmdb_item_year(item: dict) -> int | None:
+    return parse_year(item.get("release_date") or item.get("first_air_date"))
+
+
+def is_japanese_animation(item: dict) -> bool:
+    genre_ids = item.get("genre_ids") or [
+        genre.get("id") for genre in item.get("genres", []) if genre.get("id")
+    ]
+    origin_countries = item.get("origin_country") or [
+        country.get("iso_3166_1")
+        for country in item.get("production_countries", [])
+        if country.get("iso_3166_1")
+    ]
+    is_japanese = item.get("original_language") == "ja" or "JP" in origin_countries
+    return 16 in genre_ids and is_japanese
+
+
+def roulette_match_score(item: dict, title: str, year: int | None) -> tuple:
+    wanted_title = normalize_match_title(title)
+    candidate_titles = {
+        normalize_match_title(item.get("title")),
+        normalize_match_title(item.get("name")),
+        normalize_match_title(item.get("original_title")),
+        normalize_match_title(item.get("original_name")),
+    }
+    candidate_titles.discard("")
+
+    exact_title = 1 if wanted_title and wanted_title in candidate_titles else 0
+    same_year = 1 if year and tmdb_item_year(item) == year else 0
+    popularity = float(item.get("popularity") or 0)
+    return exact_title, same_year, popularity
+
+
+async def find_tmdb_by_imdb_id(
+    imdb_id: str,
+    preferred_media_type: str | None = None,
+) -> tuple[str, dict] | None:
+    if not re.fullmatch(r"tt\d+", imdb_id, flags=re.IGNORECASE):
+        return None
+
+    data = await tmdb_get(
+        f"/find/{imdb_id.lower()}",
+        {"external_source": "imdb_id", "language": "ru-RU"},
+    )
+    groups = {
+        "movie": data.get("movie_results", []),
+        "tv": data.get("tv_results", []),
+    }
+    order = [preferred_media_type] if preferred_media_type in groups else []
+    order.extend(media_type for media_type in ("movie", "tv") if media_type not in order)
+
+    for media_type in order:
+        if groups[media_type]:
+            return media_type, groups[media_type][0]
+    return None
+
+
+async def search_tmdb_title(
+    title: str,
+    year: int | None = None,
+    preferred_media_type: str | None = None,
+) -> tuple[str, dict] | None:
+    search_type = preferred_media_type if preferred_media_type in {"movie", "tv"} else "multi"
+    params = {
+        "query": title,
+        "language": "ru-RU",
+        "include_adult": "false",
+        "page": 1,
+    }
+    if year and search_type == "movie":
+        params["year"] = year
+    elif year and search_type == "tv":
+        params["first_air_date_year"] = year
+
+    data = await tmdb_get(f"/search/{search_type}", params)
+    candidates = []
+    for item in data.get("results", []):
+        media_type = tmdb_media_type(item, search_type)
+        if media_type not in {"movie", "tv"}:
+            continue
+        candidates.append((media_type, item))
+
+    if not candidates:
+        return None
+
+    return max(
+        candidates,
+        key=lambda candidate: roulette_match_score(candidate[1], title, year),
+    )
+
+
+async def resolve_roulette_title(
+    title: str,
+    imdb_id: str | None = None,
+    year: int | None = None,
+    preferred_media_type: str | None = None,
+) -> dict | None:
+    match = None
+    if imdb_id:
+        match = await find_tmdb_by_imdb_id(imdb_id, preferred_media_type)
+    if not match:
+        match = await search_tmdb_title(title, year, preferred_media_type)
+    if not match:
+        return None
+
+    media_type, summary = match
+    details = await tmdb_get(
+        f"/{media_type}/{summary['id']}",
+        {"language": "ru-RU", "append_to_response": "external_ids"},
+    )
+    resolved_imdb_id = (details.get("external_ids") or {}).get("imdb_id") or imdb_id
+    resolved_title = (
+        details.get("title")
+        or details.get("name")
+        or details.get("original_title")
+        or details.get("original_name")
+        or title
+    )
+
+    return {
+        "imdb_id": resolved_imdb_id,
+        "tmdb_id": details.get("id"),
+        "media_type": media_type,
+        "title": resolved_title,
+        "year": tmdb_item_year(details),
+        "poster": poster_url(details.get("poster_path"), "w500"),
+        "rating": round(float(details.get("vote_average") or 0), 1),
+        "overview": details.get("overview") or "Описание пока не найдено.",
+        "genres": [genre.get("name") for genre in details.get("genres", []) if genre.get("name")],
+        "is_anime": is_japanese_animation(details),
+    }

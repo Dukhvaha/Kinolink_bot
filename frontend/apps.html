@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#080810">
+    <title>Приложения — KINOLINK</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Mulish:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="/apps.css?v=roulette-1">
+</head>
+<body>
+<main class="apps-shell">
+    <header class="apps-header">
+        <a class="brand" href="/apps" aria-label="KINOLINK">KINO<span>LINK</span></a>
+        <span class="header-label">Mini Apps</span>
+    </header>
+
+    <section class="apps-heading">
+        <p>Инструменты</p>
+        <h1>Выбери приложение</h1>
+    </section>
+
+    <section class="apps-grid" aria-label="Приложения KINOLINK">
+        <article class="app-card app-card--viewer">
+            <div class="app-card-media app-card-media--viewer" aria-hidden="true">
+                <span class="play-mark">▶</span>
+            </div>
+            <div class="app-card-copy">
+                <span class="app-kicker">Основное</span>
+                <h2>Кинотеатр</h2>
+                <p>Просмотр открывается из карточки выбранного фильма или сериала.</p>
+                <span class="app-state">Доступен из бота</span>
+            </div>
+        </article>
+
+        <a class="app-card app-card--roulette" href="/apps/movie-roulette">
+            <img class="app-card-media" src="/assets/movie-roulette.png" alt="Movie Roulette">
+            <div class="app-card-copy">
+                <span class="app-kicker">Новый выбор</span>
+                <h2>Movie Roulette</h2>
+                <p>Импортируй IMDb Watchlist и доверь следующий просмотр рулетке.</p>
+                <span class="app-action">Открыть <span aria-hidden="true">→</span></span>
+            </div>
+        </a>
+    </section>
+</main>
+
+<script>
+    const webApp = window.Telegram?.WebApp;
+    if (webApp) {
+        webApp.ready();
+        webApp.expand();
+        webApp.setHeaderColor?.("#080810");
+        webApp.setBackgroundColor?.("#080810");
+    }
+</script>
+</body>
+</html>

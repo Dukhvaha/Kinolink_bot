@@ -81,6 +81,7 @@ body {
 header {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 12px;
     margin-bottom: 56px;
     opacity: 0;
@@ -99,6 +100,25 @@ header {
 .logo span {
     color: var(--text);
     font-weight: 300;
+}
+
+.apps-link {
+    color: var(--text);
+    font-family: 'Mulish', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.04);
+    transition: border-color 0.2s, color 0.2s, background 0.2s;
+}
+
+.apps-link:hover {
+    color: var(--gold);
+    border-color: rgba(232, 201, 122, 0.3);
+    background: rgba(232, 201, 122, 0.08);
 }
 
 /* ─── SKELETON ─── */
