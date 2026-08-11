@@ -7,7 +7,7 @@ if (webApp) {
     webApp.setHeaderColor?.("#080810");
     webApp.setBackgroundColor?.("#080810");
     webApp.BackButton?.show();
-    webApp.BackButton?.onClick(() => window.location.assign("/apps"));
+    webApp.BackButton?.onClick(() => webApp.close());
 }
 
 const STORAGE_KEY = "kinolink:movieRoulette:v2";

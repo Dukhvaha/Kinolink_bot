@@ -3,15 +3,15 @@ from aiogram.types import KeyboardButton, ReplyKeyboardMarkup, WebAppInfo
 from config import BASE_URL
 
 
-def mini_apps_url() -> str:
-    return f"{(BASE_URL or 'http://127.0.0.1:8000').rstrip('/')}/apps"
+def movie_roulette_url() -> str:
+    return f"{(BASE_URL or 'http://127.0.0.1:8000').rstrip('/')}/apps/movie-roulette"
 
 
 def main_keyboard(is_admin: bool = False) -> ReplyKeyboardMarkup:
     keyboard = [
         [KeyboardButton(text="🎬 Найти фильм")],
         [KeyboardButton(text="🔥 Популярное")],
-        [KeyboardButton(text="🎲 Mini Apps", web_app=WebAppInfo(url=mini_apps_url()))],
+        [KeyboardButton(text="🎲 Movie Roulette", web_app=WebAppInfo(url=movie_roulette_url()))],
         [KeyboardButton(text="🆘 Помощь"), KeyboardButton(text="📢 Сотрудничество ")],
     ]
 

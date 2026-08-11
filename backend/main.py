@@ -27,11 +27,6 @@ app.include_router(movies_router)
 app.include_router(roulette_router)
 
 
-@app.get("/apps", include_in_schema=False)
-async def mini_apps_panel():
-    return FileResponse(FRONTEND_DIR / "apps.html")
-
-
 @app.get("/apps/movie-roulette", include_in_schema=False)
 async def movie_roulette_app():
     return FileResponse(FRONTEND_DIR / "roulette.html")
