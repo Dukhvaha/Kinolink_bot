@@ -16,6 +16,8 @@ const movieId = params.get("id");
 const mediaType = params.get("type") || "movie";
 const PUBLISHER_ID = "678153547";
 const RENDEX_SDK_URL = "https://graphicslab.io/sdk/v2/rendex-sdk.min.js";
+const PLAYER_LOAD_TIMEOUT_MS = 10000;
+let rendexSdkPromise = null;
 
 function trackView() {
     const user = telegramWebApp?.initDataUnsafe?.user;
@@ -66,26 +68,81 @@ function appendTextTag(container, text, className = "tag") {
 }
 
 function loadRendexSdk() {
-    const oldScript = document.getElementById("rendexSdk");
-    if (oldScript) oldScript.remove();
+    if (rendexSdkPromise) return rendexSdkPromise;
 
-    const script = document.createElement("script");
-    script.id = "rendexSdk";
-    script.src = `${RENDEX_SDK_URL}?v=${Date.now()}`;
-    document.body.appendChild(script);
+    rendexSdkPromise = new Promise((resolve, reject) => {
+        const existingScript = document.getElementById("rendexSdk");
+        if (existingScript?.dataset.loaded === "true") {
+            resolve();
+            return;
+        }
+
+        const script = existingScript || document.createElement("script");
+        const timeoutId = window.setTimeout(() => {
+            reject(new Error("Rendex SDK loading timed out"));
+        }, PLAYER_LOAD_TIMEOUT_MS);
+
+        script.id = "rendexSdk";
+        script.src = RENDEX_SDK_URL;
+        script.async = true;
+        script.onload = () => {
+            window.clearTimeout(timeoutId);
+            script.dataset.loaded = "true";
+            resolve();
+        };
+        script.onerror = () => {
+            window.clearTimeout(timeoutId);
+            reject(new Error("Rendex SDK failed to load"));
+        };
+
+        if (!existingScript) document.body.appendChild(script);
+    });
+
+    return rendexSdkPromise;
 }
 
-function renderPlayer(playerType, playerId) {
-    const playerWrap = document.getElementById("rendexPlayer");
+function showPlayerMessage(playerWrap, message, className = "player-empty") {
+    playerWrap.innerHTML = "";
+    const status = document.createElement("div");
+    status.className = className;
+    status.textContent = message;
+    playerWrap.appendChild(status);
+}
+
+function waitForPlayerFrame(playerWrap, player, timeoutMs) {
+    return new Promise((resolve, reject) => {
+        const isReady = () => Boolean(
+            playerWrap.querySelector("iframe, video") || player.children.length
+        );
+
+        if (isReady()) {
+            resolve();
+            return;
+        }
+
+        const observer = new MutationObserver(() => {
+            if (!isReady()) return;
+            observer.disconnect();
+            window.clearTimeout(timeoutId);
+            resolve();
+        });
+        const timeoutId = window.setTimeout(() => {
+            observer.disconnect();
+            reject(new Error("Player frame loading timed out"));
+        }, timeoutMs);
+
+        observer.observe(playerWrap, { childList: true, subtree: true });
+    });
+}
+
+async function mountPlayer(playerWrap, playerType, playerId) {
+    const startedAt = Date.now();
     playerWrap.innerHTML = "";
 
-    if (!playerId) {
-        const empty = document.createElement("div");
-        empty.className = "player-empty";
-        empty.textContent = "Плеер для этого фильма пока недоступен.";
-        playerWrap.appendChild(empty);
-        return;
-    }
+    const loading = document.createElement("div");
+    loading.className = "player-loading";
+    loading.textContent = "Загружаем плеер...";
+    playerWrap.appendChild(loading);
 
     const player = document.createElement("ins");
     player.setAttribute("data-publisher-id", PUBLISHER_ID);
@@ -96,9 +153,52 @@ function renderPlayer(playerType, playerId) {
     player.setAttribute("data-nopreload", "true");
     player.setAttribute("data-width", "100%");
     player.setAttribute("data-height", "450px");
-
     playerWrap.appendChild(player);
-    loadRendexSdk();
+
+    try {
+        await loadRendexSdk();
+        const remainingTime = Math.max(
+            1,
+            PLAYER_LOAD_TIMEOUT_MS - (Date.now() - startedAt),
+        );
+        await waitForPlayerFrame(playerWrap, player, remainingTime);
+        loading.remove();
+    } catch (error) {
+        showPlayerMessage(
+            playerWrap,
+            "Плеер не удалось загрузить. Скорее всего, ошибка возникла из-за включённого VPN. Попробуйте сменить VPN-сервер или временно отключить VPN и обновить страницу.",
+            "player-empty player-error",
+        );
+    }
+}
+
+function renderPlayer(playerType, playerId) {
+    const playerWrap = document.getElementById("rendexPlayer");
+
+    if (!playerId) {
+        showPlayerMessage(playerWrap, "Плеер для этого фильма пока недоступен.");
+        return;
+    }
+
+    showPlayerMessage(
+        playerWrap,
+        "Плеер загрузится, когда ты прокрутишь страницу к нему.",
+        "player-placeholder",
+    );
+
+    const startLoading = () => mountPlayer(playerWrap, playerType, playerId);
+    if (!("IntersectionObserver" in window)) {
+        startLoading();
+        return;
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+        if (!entries.some((entry) => entry.isIntersecting)) return;
+        observer.disconnect();
+        startLoading();
+    }, { rootMargin: "320px 0px" });
+
+    observer.observe(playerWrap);
 }
 
 // ─── RENDER ────────────────────────────────────────────────

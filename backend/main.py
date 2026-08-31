@@ -33,12 +33,17 @@ async def movie_roulette_app():
 
 
 @app.middleware("http")
-async def disable_frontend_cache(request, call_next):
+async def set_frontend_cache_headers(request, call_next):
     response = await call_next(request)
-    if request.url.path == "/" or request.url.path.endswith((".html", ".js", ".css")):
-        response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
-        response.headers["Pragma"] = "no-cache"
-        response.headers["Expires"] = "0"
+    path = request.url.path.lower()
+
+    if path == "/" or path.endswith(".html") or path.startswith("/apps/"):
+        response.headers["Cache-Control"] = "no-cache"
+    elif path.endswith((".woff2", ".woff")):
+        response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
+    elif path.endswith((".js", ".css", ".png", ".jpg", ".jpeg", ".webp", ".svg")):
+        response.headers["Cache-Control"] = "public, max-age=86400"
+
     return response
 
 

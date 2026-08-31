@@ -1,0 +1,24 @@
+/* Keep typography local to the device so VPN or DNS issues cannot block rendering. */
+@font-face {
+    font-family: "Mulish";
+    src: local("Mulish"), local("SF Pro Text"), local("Roboto"), local("Arial");
+    font-style: normal;
+    font-weight: 300 900;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Mulish";
+    src: local("Mulish Italic"), local("SF Pro Text Italic"), local("Roboto Italic"), local("Arial Italic");
+    font-style: italic;
+    font-weight: 300 900;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Unbounded";
+    src: local("Unbounded"), local("SF Pro Display"), local("Roboto"), local("Arial");
+    font-style: normal;
+    font-weight: 300 900;
+    font-display: swap;
+}

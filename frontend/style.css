@@ -403,7 +403,9 @@ h1 {
     min-height: 450px;
 }
 
-.player-empty {
+.player-empty,
+.player-loading,
+.player-placeholder {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -411,6 +413,24 @@ h1 {
     color: var(--muted);
     text-align: center;
     padding: 24px;
+}
+
+.player-loading::before {
+    content: '';
+    width: 18px;
+    height: 18px;
+    margin-right: 10px;
+    border: 2px solid rgba(255, 255, 255, 0.18);
+    border-top-color: var(--gold);
+    border-radius: 50%;
+    animation: playerSpin 0.8s linear infinite;
+}
+
+.player-error {
+    color: var(--text);
+    background: rgba(255, 32, 32, 0.07);
+    border: 1px solid rgba(255, 32, 32, 0.2);
+    border-radius: 8px;
 }
 
 /* ─── VISIBILITY STATES ─── */
@@ -455,8 +475,27 @@ h1 {
     to   { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes playerSpin {
+    to { transform: rotate(360deg); }
+}
+
 /* ─── RESPONSIVE ─── */
 @media (max-width: 700px) {
+    .grain {
+        display: none;
+    }
+
+    .hero-backdrop::after {
+        filter: none;
+        background:
+            radial-gradient(ellipse 100% 55% at 50% 0%, rgba(255, 20, 20, 0.30) 0%, transparent 65%),
+            linear-gradient(180deg, transparent 0%, rgba(8, 8, 16, 0.36) 100%);
+    }
+
+    .poster-glow {
+        display: none;
+    }
+
     .movie-hero {
         grid-template-columns: 1fr;
         gap: 28px;
@@ -469,5 +508,32 @@ h1 {
 
     h1 {
         font-size: 28px;
+    }
+
+    #rendexPlayer,
+    .player-empty,
+    .player-loading,
+    .player-placeholder {
+        min-height: min(56.25vw, 360px);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+    }
+
+    .grain {
+        display: none;
+    }
+
+    .hero-backdrop::after,
+    .poster-glow {
+        filter: none;
     }
 }
